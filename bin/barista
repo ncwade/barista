@@ -1,3 +1,33 @@
 #!/usr/bin/ruby
 
-puts "barista"
+require 'optparse'
+
+options = {}
+
+commands = {
+   "brew" => OptionParser.new do |opts|
+     opts.banner = "Usage: brew [options]"
+
+     opts.on("-v", "--[no-]verbose", "Run verbosely") do |v|
+       options[:verbose] = v
+     end
+   end,
+   "search" => OptionParser.new do |opts|
+     opts.banner = "Usage: search [options]"
+
+     opts.on("-v", "--[no-]verbose", "Run verbosely") do |v|
+       options[:verbose] = v
+     end
+  end,
+}
+
+cmd = ARGV.shift
+if commands.keys.include? cmd
+   commands[cmd].parse!(ARGV)
+else
+   puts "Invalid command :/"
+   exit
+end
+
+p options
+p ARGV
