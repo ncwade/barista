@@ -3,7 +3,7 @@
 require 'optparse'
 require_relative '../src/pot.rb'
 
-options = {:toolchain => "gcc", :prefix =>"", :baseimage => "linux-x86"}
+options = {:toolchain => "gcc", :prefix => "", :baseimage => "linux-x86"}
 
 commands = {
    "brew" => OptionParser.new do |opts|
@@ -22,7 +22,7 @@ commands = {
    end,
    "init" => OptionParser.new do |opts|
      opts.banner = "Usage: init [options]"
-     options[:init] = true
+
      opts.on("-v", "--[no-]verbose", "Run verbosely") do |v|
        options[:verbose] = v
      end
@@ -38,6 +38,8 @@ commands = {
   end,
 }
 
+p ARGV
+
 cmd = ARGV.shift
 if commands.keys.include? cmd
    commands[cmd].parse!(ARGV)
@@ -47,9 +49,8 @@ else
 end
 
 p options
-p ARGV
 
-if options[:init] 
-  pot = Pot.new('',options[:toolchain],options[:prefix],options[:baseimage] )
-  pot.save
+if cmd.eql? "init"
+   pot = Pot.new('', options[:toolchain], options[:prefix], options[:baseimage])
+   pot.save
 end
