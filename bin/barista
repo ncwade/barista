@@ -2,6 +2,7 @@
 
 require_relative '../src/option_parser.rb'
 require_relative '../src/pot.rb'
+require_relative '../src/recipe.rb'
 
 option_parser = BaristaOptionParser.new
 option_parser.command("brew")
@@ -23,3 +24,11 @@ if cmd.eql? "init"
   pot = Pot.new('', options[:toolchain], options[:prefix], options[:baseimage])
   pot.save
 end
+
+class TestRecipe < Recipe
+  def install
+    system "echo", "1", "2"
+  end
+end
+recipe = TestRecipe.new
+recipe.install
