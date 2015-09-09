@@ -7,15 +7,15 @@ class Pot
     @@parameters =  Hash.new
 
     # Set the member variables.
-    def initialize(filePath)  
+    def initialize(filePath,toolchain,prefix,baseimage)  
         # Instance variables
         if File.file?(filePath) then
             @configFile = File.read(filePath)
             @@parameters  = JSON.parse(@configFile)
         else
-            @@parameters['baseimage'] = "linux-x86"  
-            @@parameters['toolchain'] = "gcc"  
-            @@parameters['toolchain-prefix'] = ""
+            @@parameters['baseimage'] = baseimage  
+            @@parameters['toolchain'] = toolchain
+            @@parameters['toolchain-prefix'] = prefix
             Dir.mkdir('.brew') unless File.exists?('.brew')
         end
     end
