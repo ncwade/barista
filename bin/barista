@@ -1,54 +1,23 @@
 #!/usr/bin/ruby
 
-require 'optparse'
+require_relative '../src/option_parser.rb'
 require_relative '../src/pot.rb'
 
-options = {:toolchain => "gcc", :prefix => "", :baseimage => "linux-x86"}
-
-commands = {
-  "brew" => OptionParser.new do |opts|
-    opts.banner = "Usage: brew [options]"
-
-    opts.on("-v", "--[no-]verbose", "Run verbosely") do |v|
-      options[:verbose] = v
-    end
-  end,
-  "search" => OptionParser.new do |opts|
-    opts.banner = "Usage: search [options]"
-
-    opts.on("-v", "--[no-]verbose", "Run verbosely") do |v|
-      options[:verbose] = v
-    end
-  end,
-  "init" => OptionParser.new do |opts|
-    opts.banner = "Usage: init [options]"
-
-    opts.on("-v", "--[no-]verbose", "Run verbosely") do |v|
-      options[:verbose] = v
-    end
-    opts.on("-t n", "--toolchain=n", "Toolchain type to use: clang or gcc.") do |toolchain|
-      options[:toolchain] = toolchain
-    end
-    opts.on("-p n", "--prefix=n", "Prefix for your toolchain. This should include the trailing \"-\".") do |prefix|
-      options[:prefix] = prefix
-    end
-    opts.on("-i n", "--image=n", "Image to base the system off of.") do |image|
-      options[:baseimage] = image
-    end
-  end,
-}
-
-p ARGV
-
-cmd = ARGV.shift
-if commands.keys.include? cmd
-  commands[cmd].parse!(ARGV)
-else
-  puts "Invalid command :/"
-  exit
+option_parser = BaristaOptionParser.new
+option_parser.command("brew")
+option_parser.command("search")
+option_parser.command("init") do |opts, options|
+  opts.on("-t n", "--toolchain=n", "Toolchain type to use: clang or gcc.") do |toolchain|
+    options[:toolchain] = toolchain
+  end
+  opts.on("-p n", "--prefix=n", "Prefix for your toolchain. This should include the trailing \"-\".") do |prefix|
+    options[:prefix] = prefix
+  end
+  opts.on("-i n", "--image=n", "Image to base the system off of.") do |image|
+    options[:baseimage] = image
+  end
 end
-
-p options
+(cmd, options) = option_parser.parse!
 
 if cmd.eql? "init"
   pot = Pot.new('', options[:toolchain], options[:prefix], options[:baseimage])
