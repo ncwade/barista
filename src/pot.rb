@@ -1,6 +1,7 @@
 # Defines the "Brewfile" configuration.
 
 require 'json'
+require_relative 'images.rb'
 
 class Pot
   @@filePath = "Brewfile"
@@ -17,12 +18,16 @@ class Pot
       @@parameters['toolchain'] = toolchain
       @@parameters['toolchain-prefix'] = prefix
       Dir.mkdir('.brew') unless File.exists?('.brew')
+      Dir.mkdir('.brew/image') unless File.exists?('.brew/image')
     end
   end
 
-  # Grab the Linux base image.
+  # Grab the base image.
   def baseimage
-    return @@parameters['baseimage']
+    image = Image.new(@@parameters['baseimage'])
+    return false if !image.retrieve_image
+    return false if !image.extract_image
+    return true
   end
 
   # Get the toolchain

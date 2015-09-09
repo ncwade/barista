@@ -1,7 +1,7 @@
 #!/usr/bin/ruby
 
 require_relative '../src/option_parser.rb'
-require_relative '../src/pot.rb'
+require_relative '../src/init.rb'
 require_relative '../src/recipe.rb'
 
 option_parser = BaristaOptionParser.new
@@ -21,8 +21,7 @@ end
 (cmd, options) = option_parser.parse!
 
 if cmd.eql? "init"
-  pot = Pot.new('', options[:toolchain], options[:prefix], options[:baseimage])
-  pot.save
+  barista_init(options)
 end
 
 class TestRecipe < Recipe
