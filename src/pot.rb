@@ -2,13 +2,14 @@
 
 require 'json'
 require_relative 'images.rb'
+require_relative 'toolchain.rb'
 
 class Pot
   @@filePath = "Brewfile"
   @@parameters =  Hash.new
 
   # Set the member variables.
-  def initialize(filePath,toolchain,prefix,baseimage)
+  def initialize(filePath,toolchain,baseimage)
     # Instance variables
     if File.file?(filePath) then
       @configFile = File.read(filePath)
@@ -16,9 +17,9 @@ class Pot
     else
       @@parameters['baseimage'] = baseimage
       @@parameters['toolchain'] = toolchain
-      @@parameters['toolchain-prefix'] = prefix
       Dir.mkdir('.brew') unless File.exists?('.brew')
       Dir.mkdir('.brew/image') unless File.exists?('.brew/image')
+      Dir.mkdir('.brew/'+@@parameters['toolchain']+'/') unless File.exists?('.brew/'+@@parameters['toolchain']+'/')
     end
   end
 
@@ -32,12 +33,19 @@ class Pot
 
   # Get the toolchain
   def toolchain
+    toolchain = Toolchain.new(@@parameters['toolchain'])
+    return false if !toolchain.retrieve_toolchain
+    return false if !toolchain.extract_toolchain
+    return true
+  end
+
+  def get_toolchain
     return @@parameters['toolchain']
   end
 
-  # Get the toolchain prefix.
-  def prefix
-    return @@parameters['toolchain-prefix']
+  def get_sysroot
+    current_path = `pwd`
+    return current_path.strip+"/"+".brew/image"
   end
 
   # Get all the projects currently in the Brew.

@@ -1,0 +1,6 @@
+{
+  "md5"     : "852deef2573bb3c5f85bd9b5ecf937db",
+  "url"     : "http://192.168.107.12/enrm-toolchain.tar.gz",
+  "format"  : "gzip",
+  "prefix"  : "powerpc-unknown-linux-gnuspe-"
+}
