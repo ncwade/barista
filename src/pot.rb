@@ -11,19 +11,23 @@ class Pot
     if (target == @@filePath)
       @configFile = File.read(target)
       @@parameters  = JSON.parse(@configFile)
+
+      # Parse file information.
+      @fileContent = File.read(@@parameters['image'])
+      @baseInfo  = JSON.parse(@fileContent)
     else
       if File.file?(target) then
-        @@parameters['image'] = target
+        # Get the complete path
+        path = `pwd`
+
         # Parse file information.
         @fileContent = File.read(target)
         @baseInfo  = JSON.parse(@fileContent)
 
-        # Get the complete path
-        path = `pwd`
-
         @@parameters['toolchain'] = path.strip+'/.brew/toolchain/bin/'
         @@parameters['prefix'] = @baseInfo['prefix']
         @@parameters['sysroot'] = path.strip+'/.brew/toolchain/'+@@parameters['prefix']+'/sysroot/'
+        @@parameters['image'] = path.strip+'/'+target
       end
     end
 
@@ -32,12 +36,16 @@ class Pot
     Dir.mkdir('.brew/toolchain/') unless File.exists?('.brew/toolchain/')
 
     # Pull the base FS image.
-    system 'wget '+ @baseInfo['fs_base'] + ' -O .brew/base_image'
+    if !File.exists?('.brew/base_image')
+       system 'wget '+ @baseInfo['fs_base'] + ' -O .brew/base_image'
+    end
 
     # Pull the toolchain
-    system 'wget '+ @baseInfo['toolchain'] + ' -O .brew/toolchain_archive'
-    # Extract toolchain
-    system 'tar -xf .brew/toolchain_archive -C .brew/toolchain/ > /dev/null 2>&1'
+    if !File.exists?('.brew/toolchain_archive')
+      # Extract toolchain
+      system 'tar -xf .brew/toolchain_archive -C .brew/toolchain/ > /dev/null 2>&1'
+      system 'wget '+ @baseInfo['toolchain'] + ' -O .brew/toolchain_archive'
+    end
   end
 
   # Get all the projects currently in the Brew.
