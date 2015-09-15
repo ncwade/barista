@@ -73,8 +73,8 @@ Vagrant.configure(2) do |config|
     make
     sudo mkdir /opt/www
     cd output/host/usr/
+    sudo tar -czf ../toolchain.tar.gz .
     cd ..
-    sudo tar -czf toolchain.tar.gz .
     sudo cp toolchain.tar.gz /opt/www/
     cd ..
     sudo cp images/rootfs.tar /opt/www/base-linux.tar
