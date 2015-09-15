@@ -34,8 +34,8 @@ class Image
     imageFile = File.read('images/'+@@image+'.json')
     @@parameters  = JSON.parse(imageFile)
     case @@parameters['format']
-      when "gzip"
-        system 'fakeroot tar -zxvf .brew/baseimage -C .brew/image/ > /dev/null 2>&1'
+      when "tar"
+        system 'fakeroot tar -xf .brew/baseimage -C .brew/image/ > /dev/null 2>&1'
       when "jffs2"
         puts 'JFFS2 not supported yet.'
       when "cramfs"

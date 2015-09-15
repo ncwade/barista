@@ -21,8 +21,8 @@ class Toolchain
 
   def extract_toolchain
     case @@parameters['format']
-      when "gzip"
-        system 'tar -zxvf .brew/toolchain_archive -C .brew/'+@@toolchain+'/ > /dev/null 2>&1'
+      when "tar"
+        system 'tar -xf .brew/toolchain_archive -C .brew/'+@@toolchain+'/ > /dev/null 2>&1'
       else
         puts "No file format defined for this image."
         return false

@@ -1,4 +1,6 @@
-[
-    "c_compiler" : "gcc",
-    "cxx_compiler" : "g++",
-]
+{
+  "md5"     : "83467eefd5315486bde5f0d92fcfe467",
+  "url"     : "http://localhost/toolchain.tar.gz",
+  "format"  : "tar",
+  "prefix"  : "i586-buildroot-linux-uclibc-"
+}
