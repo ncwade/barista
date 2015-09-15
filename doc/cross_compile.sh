@@ -36,9 +36,9 @@ VERBOSE="-v"
 
 TARGET_TRIPLE=x86_64-unknown-linux-elf
 SYSROOT=$HOME/Development/crossbuild/sysroot
-EXEC_PREFIX=/Users/jtomschroeder/Development/crossbuild/x86_64-elf/bin
+EXEC_PREFIX=$HOME/Development/crossbuild/x86_64-elf/bin
 
-$CC $VERBOSE -target ${TARGET_TRIPLE} hello_world.c -o hello_world --sysroot=$SYSROOT -B${EXEC_PREFIX}
+$CC $VERBOSE -target ${TARGET_TRIPLE} hello_world.c -o hello_world --sysroot=$SYSROOT -B $EXEC_PREFIX
 
 # $CXX $CXX_FLAGS --sysroot=$SYSROOT \
 #                 hello_world.cpp -o hello_world $VERBOSE
