@@ -79,5 +79,6 @@ Vagrant.configure(2) do |config|
     cd ..
     sudo cp images/rootfs.tar /opt/www/base-linux.tar
     echo "cd /opt/www ; sudo python -m SimpleHTTPServer 80&" >> /home/vagrant/.profile
+    echo "export no_proxy=localhost"
   SHELL
 end

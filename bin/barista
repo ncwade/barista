@@ -8,14 +8,8 @@ option_parser = BaristaOptionParser.new
 option_parser.command("brew")
 option_parser.command("search")
 option_parser.command("init") do |opts, options|
-  opts.on("-t n", "--toolchain=n", "Toolchain type to use: clang or gcc.") do |toolchain|
-    options[:toolchain] = toolchain
-  end
-  opts.on("-p n", "--prefix=n", "Prefix for your toolchain. This should include the trailing \"-\".") do |prefix|
-    options[:prefix] = prefix
-  end
-  opts.on("-i n", "--image=n", "Image to base the system off of.") do |image|
-    options[:baseimage] = image
+  opts.on("-t n", "--target=n", "Target type to use.") do |target|
+    options[:target] = target
   end
 end
 (cmd, options) = option_parser.parse!
