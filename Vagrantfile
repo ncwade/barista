@@ -65,7 +65,7 @@ Vagrant.configure(2) do |config|
   # documentation for more information about their specific syntax and use.
   config.vm.provision "shell", inline: <<-SHELL
     sudo apt-get update
-    sudo apt-get -y install gcc g++ libncurses-dev unzip thttpd
+    sudo apt-get -y install gcc g++ libncurses-dev unzip
     wget http://buildroot.uclibc.org/downloads/snapshots/buildroot-snapshot.tar.bz2
     tar xf buildroot-snapshot.tar.bz2
     cd buildroot/
