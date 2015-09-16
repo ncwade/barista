@@ -4,41 +4,60 @@
 # git clone git://sourceware.org/git/binutils-gdb.git
 # ../configure --disable-nls --target=x86_64-elf --disable-werror --enable-gold=yes --disable-gdb --with-sysroot --prefix=$HOME/Development/crossbuild
 
-## Create archive(s) of build deps & extract to create sysroot on build machine
-#
-# tar -czf archive.tar.gz /usr/lib/x86_64-linux-gnu/ /usr/lib/gcc/x86_64-linux-gnu/ /lib/x86_64-linux-gnu/
-# mkdir -p $HOME/Development/crossbuild/sysroot
-# tar -C $HOME/Development/crossbuild/sysroot -xf archive.tar.gz
-#
-# sudo aptitude download libc6-dev
-# ar vx libc6-dev_2.19-0ubuntu6.6_amd64.deb
-# tar -tf data.tar.xz
+## Create archive of build deps from deb packages (extract to create sysroot on build machine)
+# sudo aptitude download libc6 libc6-dev linux-libc-dev libgcc-4.9-dev libgcc1 libstdc++6 libstdc++-4.9-dev
+# mkdir sysroot
+# for i in *.deb; do ar xv $i; tar -C sysroot -xf data.tar*; rm data.tar*; done
+# cd sysroot && tar -czf ../sysroot.tar.gz * && cd -
 
-## Redirect absolute symlinks in sysroot
-# for f in $(find $HOME/Development/crossbuild/sysroot -type l); do
-#    readlink $f | grep "^/"
-#    if [[ $? -eq 0 ]]; then
-#       ln -sf $HOME/Development/crossbuild/sysroot/$(readlink $f) $f
-#    fi
-# done
+# mkdir -p .brew/toolchain/x86_64-unknown-linux-elf/sysroot
 
 CC=/usr/local/Cellar/llvm/3.6.2/bin/clang
 CXX=/usr/local/Cellar/llvm/3.6.2/bin/clang++
 
-CXX_FLAGS="-std=c++14 -stdlib=libc++"
+CXX_FLAGS="-std=c++14"
+# CXX_FLAGS="-std=c++14 -stdlib=libc++"
 
-VERBOSE="-v"
+# VERBOSE="-v"
 # VERBOSE="-v -Wl,--verbose"
 
 # TARGET_TRIPLE=powerpc-wrs-linux-gnu
 # SYSROOT=/opt/sysroot/fsl_8572ds-glibc_cgl/sysroot
 # EXEC_PREFIX=/opt/sysroot/fsl_8572ds-glibc_cgl/powerpc-wrs-linux-gnu
 
+# TARGET_TRIPLE=x86_64-unknown-linux-elf
+# SYSROOT=$HOME/Development/crossbuild/sysroot
+# EXEC_PREFIX=$HOME/Development/crossbuild/x86_64-elf/bin
+
+SWD="$(cd "$(dirname "$0")"; pwd -P)" # script working directory
+BREW=$SWD/../.brew
+
 TARGET_TRIPLE=x86_64-unknown-linux-elf
-SYSROOT=$HOME/Development/crossbuild/sysroot
-EXEC_PREFIX=$HOME/Development/crossbuild/x86_64-elf/bin
+SYSROOT=$BREW/toolchain/$TARGET_TRIPLE/sysroot
+EXEC_PREFIX=$BREW/toolchain/$TARGET_TRIPLE/bin
 
-$CC $VERBOSE -target ${TARGET_TRIPLE} hello_world.c -o hello_world --sysroot=$SYSROOT -B $EXEC_PREFIX
+if [[ "$1" == "--fix-links" ]]; then
+   ## Redirect absolute symlinks in sysroot
+   for f in $(find $SYSROOT -type l); do
+      readlink $f | grep "^/"
+      if [[ $? -eq 0 ]]; then
+         ln -sf $SYSROOT/$(readlink $f) $f
+      fi
+   done
+fi
 
-# $CXX $CXX_FLAGS --sysroot=$SYSROOT \
-#                 hello_world.cpp -o hello_world $VERBOSE
+CODE='#include <stdio.h>
+int main()
+{
+   puts("Hello, world!");
+   return 0;
+}'
+
+echo "$CODE" | $CC $VERBOSE -target ${TARGET_TRIPLE} -x c - -o hello_world --sysroot=$SYSROOT -B $EXEC_PREFIX
+
+echo "$CODE" | $CXX $CXX_FLAGS $VERBOSE -target ${TARGET_TRIPLE} -x c++ - -o hello_worldpp --sysroot=$SYSROOT -B $EXEC_PREFIX
+
+#####
+
+# export BREW=$HOME/Development/barista/.brew/
+# CC=/usr/local/Cellar/llvm/3.6.2/bin/clang CXX=/usr/local/Cellar/llvm/3.6.2/bin/clang++ cmake -GNinja -DCMAKE_TOOLCHAIN_FILE=$HOME/Development/barista/doc/clang_cross.toolchain.cmake ..
