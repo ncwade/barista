@@ -1,42 +1,51 @@
 # Defines the "Brewfile" configuration.
 
 require 'json'
-require_relative 'images.rb'
-require_relative 'toolchain.rb'
 
 class Pot
   @@filePath = "Brewfile"
   @@parameters =  Hash.new
 
   # Set the member variables.
-  def initialize(filePath,toolchain,baseimage)
-    # Instance variables
-    if File.file?(filePath) then
-      @configFile = File.read(filePath)
+  def initialize(target)
+    if (target == @@filePath)
+      @configFile = File.read(target)
       @@parameters  = JSON.parse(@configFile)
+
+      # Parse file information.
+      @fileContent = File.read(@@parameters['image'])
+      @baseInfo  = JSON.parse(@fileContent)
     else
-      @@parameters['baseimage'] = baseimage
-      @@parameters['toolchain'] = toolchain
-      Dir.mkdir('.brew') unless File.exists?('.brew')
-      Dir.mkdir('.brew/image') unless File.exists?('.brew/image')
-      Dir.mkdir('.brew/'+@@parameters['toolchain']+'/') unless File.exists?('.brew/'+@@parameters['toolchain']+'/')
+      if File.file?(target) then
+        # Get the complete path
+        path = `pwd`
+
+        # Parse file information.
+        @fileContent = File.read(target)
+        @baseInfo  = JSON.parse(@fileContent)
+
+        @@parameters['toolchain'] = path.strip+'/.brew/toolchain/bin/'
+        @@parameters['prefix'] = @baseInfo['prefix']
+        @@parameters['sysroot'] = path.strip+'/.brew/toolchain/'+@@parameters['prefix']+'/sysroot/'
+        @@parameters['image'] = path.strip+'/'+target
+      end
     end
-  end
 
-  # Grab the base image.
-  def baseimage
-    image = Image.new(@@parameters['baseimage'])
-    return false if !image.retrieve_image
-    return false if !image.extract_image
-    return true
-  end
+    # Create directory structure.
+    Dir.mkdir('.brew') unless File.exists?('.brew')
+    Dir.mkdir('.brew/toolchain/') unless File.exists?('.brew/toolchain/')
 
-  # Get the toolchain
-  def toolchain
-    toolchain = Toolchain.new(@@parameters['toolchain'])
-    return false if !toolchain.retrieve_toolchain
-    return false if !toolchain.extract_toolchain
-    return true
+    # Pull the base FS image.
+    if !File.exists?('.brew/base_image')
+       system 'wget '+ @baseInfo['fs_base'] + ' -O .brew/base_image'
+    end
+
+    if !File.exists?('.brew/toolchain_archive')
+      # Pull the toolchain
+      system 'wget '+ @baseInfo['toolchain'] + ' -O .brew/toolchain_archive'
+      # Extract toolchain
+      system 'tar -xf .brew/toolchain_archive -C .brew/toolchain/'
+    end
   end
 
   def get_toolchain
@@ -44,8 +53,11 @@ class Pot
   end
 
   def get_sysroot
-    current_path = `pwd`
-    return current_path.strip+"/"+".brew/image"
+    return @@parameters['sysroot']
+  end
+
+  def get_prefix
+    return @@parameters['prefix']
   end
 
   # Get all the projects currently in the Brew.

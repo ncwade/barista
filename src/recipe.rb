@@ -30,7 +30,7 @@ class Recipe
   def initialize
   end
 
-  def install(toolchain, prefix, sysroot)
+  def install(toolchain, sysroot, prefix, destination)
   end
 
   class << self

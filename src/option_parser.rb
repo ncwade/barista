@@ -8,7 +8,7 @@ class BaristaOptionParser
   end
 
   def command(cmd)
-    options = {:toolchain => "gcc", :prefix => "", :baseimage => "linux-x86"}
+    options = {:target => "base-linux"}
     option_parser = OptionParser.new do |opts|
       opts.banner = "Usage: barista #{cmd} [options]"
 
