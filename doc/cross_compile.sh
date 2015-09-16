@@ -5,7 +5,7 @@
 # ../configure --disable-nls --target=x86_64-elf --disable-werror --enable-gold=yes --disable-gdb --with-sysroot --prefix=$HOME/Development/crossbuild
 
 ## Create archive of build deps from deb packages (extract to create sysroot on build machine)
-# sudo aptitude download libc6 libc6-dev libgcc-4.9-dev libgcc1 libstdc++6 libstdc++-4.9-dev
+# sudo aptitude download libc6 libc6-dev linux-libc-dev libgcc-4.9-dev libgcc1 libstdc++6 libstdc++-4.9-dev
 # mkdir sysroot
 # for i in *.deb; do ar xv $i; tar -C sysroot -xf data.tar*; rm data.tar*; done
 # cd sysroot && tar -czf ../sysroot.tar.gz * && cd -
@@ -56,3 +56,8 @@ int main()
 echo "$CODE" | $CC $VERBOSE -target ${TARGET_TRIPLE} -x c - -o hello_world --sysroot=$SYSROOT -B $EXEC_PREFIX
 
 echo "$CODE" | $CXX $CXX_FLAGS $VERBOSE -target ${TARGET_TRIPLE} -x c++ - -o hello_worldpp --sysroot=$SYSROOT -B $EXEC_PREFIX
+
+#####
+
+# export BREW=$HOME/Development/barista/.brew/
+# CC=/usr/local/Cellar/llvm/3.6.2/bin/clang CXX=/usr/local/Cellar/llvm/3.6.2/bin/clang++ cmake -GNinja -DCMAKE_TOOLCHAIN_FILE=$HOME/Development/barista/doc/clang_cross.toolchain.cmake ..
