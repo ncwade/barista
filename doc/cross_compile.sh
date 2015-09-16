@@ -5,7 +5,7 @@
 # ../configure --disable-nls --target=x86_64-elf --disable-werror --enable-gold=yes --disable-gdb --with-sysroot --prefix=$HOME/Development/crossbuild
 
 ## Create archive of build deps from deb packages (extract to create sysroot on build machine)
-# sudo aptitude download libc6 libc6-dev libgcc-4.9-dev libgcc1
+# sudo aptitude download libc6 libc6-dev libgcc-4.9-dev libgcc1 libstdc++6 libstdc++-4.9-dev
 # mkdir sysroot
 # for i in *.deb; do ar xv $i; tar -C sysroot -xf data.tar*; rm data.tar*; done
 # cd sysroot && tar -czf ../sysroot.tar.gz * && cd -
@@ -15,7 +15,8 @@
 CC=/usr/local/Cellar/llvm/3.6.2/bin/clang
 CXX=/usr/local/Cellar/llvm/3.6.2/bin/clang++
 
-CXX_FLAGS="-std=c++14 -stdlib=libc++"
+CXX_FLAGS="-std=c++14"
+# CXX_FLAGS="-std=c++14 -stdlib=libc++"
 
 # VERBOSE="-v"
 # VERBOSE="-v -Wl,--verbose"
@@ -35,7 +36,7 @@ TARGET_TRIPLE=x86_64-unknown-linux-elf
 SYSROOT=$BREW/toolchain/$TARGET_TRIPLE/sysroot
 EXEC_PREFIX=$BREW/toolchain/$TARGET_TRIPLE/bin
 
-if [[ "$1" == "full" ]]; then
+if [[ "$1" == "--fix-links" ]]; then
    ## Redirect absolute symlinks in sysroot
    for f in $(find $SYSROOT -type l); do
       readlink $f | grep "^/"
@@ -45,7 +46,13 @@ if [[ "$1" == "full" ]]; then
    done
 fi
 
-$CC $VERBOSE -target ${TARGET_TRIPLE} hello_world.c -o hello_world --sysroot=$SYSROOT -B $EXEC_PREFIX
+CODE='#include <stdio.h>
+int main()
+{
+   puts("Hello, world!");
+   return 0;
+}'
 
-# $CXX $CXX_FLAGS --sysroot=$SYSROOT \
-#                 hello_world.cpp -o hello_world $VERBOSE
+echo "$CODE" | $CC $VERBOSE -target ${TARGET_TRIPLE} -x c - -o hello_world --sysroot=$SYSROOT -B $EXEC_PREFIX
+
+echo "$CODE" | $CXX $CXX_FLAGS $VERBOSE -target ${TARGET_TRIPLE} -x c++ - -o hello_worldpp --sysroot=$SYSROOT -B $EXEC_PREFIX
