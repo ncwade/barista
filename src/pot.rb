@@ -40,12 +40,24 @@ class Pot
        system 'wget '+ @baseInfo['fs_base'] + ' -O .brew/base_image'
     end
 
-    # Pull the toolchain
     if !File.exists?('.brew/toolchain_archive')
-      # Extract toolchain
-      system 'tar -xf .brew/toolchain_archive -C .brew/toolchain/ > /dev/null 2>&1'
+      # Pull the toolchain
       system 'wget '+ @baseInfo['toolchain'] + ' -O .brew/toolchain_archive'
+      # Extract toolchain
+      system 'tar -xf .brew/toolchain_archive -C .brew/toolchain/'
     end
+  end
+
+  def get_toolchain
+    return @@parameters['toolchain']
+  end
+
+  def get_sysroot
+    return @@parameters['sysroot']
+  end
+
+  def get_prefix
+    return @@parameters['prefix']
   end
 
   # Get all the projects currently in the Brew.
