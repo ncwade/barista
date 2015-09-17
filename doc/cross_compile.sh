@@ -34,7 +34,7 @@ BREW=$SWD/../.brew
 
 TARGET_TRIPLE=x86_64-unknown-linux-elf
 SYSROOT=$BREW/toolchain/$TARGET_TRIPLE/sysroot
-EXEC_PREFIX=$BREW/toolchain/$TARGET_TRIPLE/bin
+EXEC_PREFIX=$BREW/toolchain/bin
 
 if [[ "$1" == "--fix-links" ]]; then
    ## Redirect absolute symlinks in sysroot
@@ -56,8 +56,3 @@ int main()
 echo "$CODE" | $CC $VERBOSE -target ${TARGET_TRIPLE} -x c - -o hello_world --sysroot=$SYSROOT -B $EXEC_PREFIX
 
 echo "$CODE" | $CXX $CXX_FLAGS $VERBOSE -target ${TARGET_TRIPLE} -x c++ - -o hello_worldpp --sysroot=$SYSROOT -B $EXEC_PREFIX
-
-#####
-
-# export BREW=$HOME/Development/barista/.brew/
-# CC=/usr/local/Cellar/llvm/3.6.2/bin/clang CXX=/usr/local/Cellar/llvm/3.6.2/bin/clang++ cmake -GNinja -DCMAKE_TOOLCHAIN_FILE=$HOME/Development/barista/doc/clang_cross.toolchain.cmake ..
