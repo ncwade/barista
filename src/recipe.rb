@@ -27,10 +27,27 @@ end
 class Recipe
   include Commander
 
-  def initialize
+  attr_reader :toolchain
+  attr_reader :sysroot
+  attr_reader :prefix
+  attr_reader :destination
+
+  def initialize(toolchain, sysroot, prefix, destination)
+    @toolchain = toolchain
+    @sysroot = sysroot
+    @prefix = prefix
+    @destination = destination
   end
 
-  def install(toolchain, sysroot, prefix, destination)
+  def configure(args)
+    system "CC=#{prefix}-clang PATH=#{toolchain}:$PATH ./configure --host=#{prefix} --prefix=#{destination} #{args}"
+  end
+
+  def make(target = nil)
+    system "PATH=#{toolchain}:$PATH make #{target}"
+  end
+
+  def install
   end
 
   class << self

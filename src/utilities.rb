@@ -7,5 +7,5 @@ def get_package_path(package)
   stderr.gets(nil)
   stderr.close
   exit_code = wait_thr.value
-  return output
+  output
 end

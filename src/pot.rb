@@ -4,7 +4,7 @@ require 'json'
 
 class Pot
   @@filePath = "Brewfile"
-  @@parameters =  Hash.new
+  @@parameters = Hash.new
 
   # Set the member variables.
   def initialize(target)
@@ -24,10 +24,10 @@ class Pot
         @fileContent = File.read(target)
         @baseInfo  = JSON.parse(@fileContent)
 
-        @@parameters['toolchain'] = path.strip+'/.brew/toolchain/bin/'
+        @@parameters['toolchain'] = path.strip + '/.brew/toolchain/bin/'
         @@parameters['prefix'] = @baseInfo['prefix']
-        @@parameters['sysroot'] = path.strip+'/.brew/toolchain/'+@@parameters['prefix']+'/sysroot/'
-        @@parameters['image'] = path.strip+'/'+target
+        @@parameters['sysroot'] = path.strip + '/.brew/toolchain/' + @@parameters['prefix'] + '/sysroot/'
+        @@parameters['image'] = path.strip + '/' + target
       end
     end
 
@@ -48,16 +48,16 @@ class Pot
     end
   end
 
-  def get_toolchain
-    return @@parameters['toolchain']
+  def toolchain
+    @@parameters['toolchain']
   end
 
-  def get_sysroot
-    return @@parameters['sysroot']
+  def sysroot
+    @@parameters['sysroot']
   end
 
-  def get_prefix
-    return @@parameters['prefix']
+  def prefix
+    @@parameters['prefix']
   end
 
   # Get all the projects currently in the Brew.
@@ -65,7 +65,7 @@ class Pot
     @@parameters['projects'] .each do |project|
       puts project['name']
     end
-    return @@parameters['projects']
+    @@parameters['projects']
   end
 
   # Add a project to the Brew.
