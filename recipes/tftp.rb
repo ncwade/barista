@@ -1,13 +1,12 @@
+
 require_relative '../src/recipe.rb'
 
-class Tftp < Recipe
+Cookbook.recipe("tftp") do
+  url "https://www.kernel.org/pub/software/network/tftp/tftp-hpa-0.40.tar.gz"
+
   def install
-    system "wget", "https://www.kernel.org/pub/software/network/tftp/tftp-hpa-0.40.tar.gz"
-    system "tar", "xf", "tftp-hpa-0.40.tar.gz"
-    Dir.chdir('tftp-hpa-0.40') do
-      configure "--without-readline"
-      make :clean
-      make
-    end
+    configure "--without-readline"
+    make
+    make :install
   end
 end

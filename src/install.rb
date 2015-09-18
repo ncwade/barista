@@ -18,8 +18,11 @@ def barista_install(options)
 
     FileUtils.mkdir_p '.brew/sandbox/'
     Dir.chdir('.brew/sandbox/') do
-      newObject = eval(file_name.capitalize).new(pot.toolchain, pot.sysroot, pot.prefix, dest)
-      newObject.install
+      recipe = Cookbook.recipes[file_name]
+      code_dir = recipe.setup(pot.toolchain, pot.sysroot, pot.prefix, dest)
+      Dir.chdir(code_dir) do
+        recipe.install
+      end
     end
   else
     puts "Could not find package requested."

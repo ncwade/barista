@@ -1,6 +1,7 @@
 
 # Recipe
 
+require 'uri'
 require_relative "extensions/module.rb"
 
 # class Wget < Recipe
@@ -20,7 +21,22 @@ module Commander
     pid = spawn(cmd, *args)
     Process.wait(pid)
     $stdout.flush
-    puts $?.success?
+    # puts $?.success?
+  end
+end
+
+module Cookbook
+  def self.recipe(name, &block)
+    recipe = Recipe.new
+    recipe.instance_eval(&block)
+
+    @recipes ||= {}
+    @recipes[name] = recipe
+  end
+
+  def self.recipes
+    @recipes ||= {}
+    @recipes
   end
 end
 
@@ -32,11 +48,12 @@ class Recipe
   attr_reader :prefix
   attr_reader :destination
 
-  def initialize(toolchain, sysroot, prefix, destination)
-    @toolchain = toolchain
-    @sysroot = sysroot
-    @prefix = prefix
-    @destination = destination
+  def initialize
+    @attrs = {}
+  end
+
+  def method_missing(name, *args, &block)
+    @attrs[name.to_sym] = args[0]
   end
 
   def configure(args)
@@ -47,20 +64,27 @@ class Recipe
     system "PATH=#{toolchain}:$PATH make #{target}"
   end
 
-  def install
+  def download
+    url = @attrs[:url]
+    uri = URI.parse(url)
+    filename = File.basename(uri.path)
+    if !File.exists? filename
+      system "wget", url
+    end
+    filename
   end
 
-  class << self
-    attr_rw :desc
-    attr_rw :homepage
+  def setup(toolchain, sysroot, prefix, destination)
+    @toolchain = toolchain
+    @sysroot = sysroot
+    @prefix = prefix
+    @destination = destination
 
-    def url(val, specs = {})
-    end
+    filename = download()
+    system "tar", "-xf", filename
+    filename.sub(/\.tar\..*/, "")
+  end
 
-    def depends_on(dep)
-    end
-
-    def option(name, description = "")
-    end
+  def install
   end
 end
