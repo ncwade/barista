@@ -15,8 +15,14 @@
 CC=/usr/local/Cellar/llvm/3.6.2/bin/clang
 CXX=/usr/local/Cellar/llvm/3.6.2/bin/clang++
 
-CXX_FLAGS="-std=c++14"
-# CXX_FLAGS="-std=c++14 -stdlib=libc++"
+## GCC options
+# -nostdlib
+# -nodefaultlibs
+# -nostdinc
+# -nostdinc++
+
+# CXX_FLAGS="-std=c++14"
+CXX_FLAGS="-std=c++14 -stdlib=libc++ -nostdinc++"
 
 # VERBOSE="-v"
 # VERBOSE="-v -Wl,--verbose"
@@ -46,13 +52,36 @@ if [[ "$1" == "--fix-links" ]]; then
    done
 fi
 
-CODE='#include <stdio.h>
-int main()
-{
+CODE='
+#include <stdio.h>
+int main() {
    puts("Hello, world!");
    return 0;
 }'
 
 echo "$CODE" | $CC $VERBOSE -target ${TARGET_TRIPLE} -x c - -o hello_world --sysroot=$SYSROOT -B $EXEC_PREFIX
 
-echo "$CODE" | $CXX $CXX_FLAGS $VERBOSE -target ${TARGET_TRIPLE} -x c++ - -o hello_worldpp --sysroot=$SYSROOT -B $EXEC_PREFIX
+
+CXX_CODE='
+#include <iostream>
+#include <vector>
+
+int main() {
+   std::cout << "Hello, C++!" << std::endl;
+
+   std::vector<int> vec = {1, 2, 3, 4, 5};
+   for (auto i : vec) {
+      std::cout << i << std::endl;
+   }
+
+   return 0;
+}'
+
+echo "$CXX_CODE" | $CXX $CXX_FLAGS                       \
+                        $VERBOSE                         \
+                        -target ${TARGET_TRIPLE}         \
+                        --sysroot=$SYSROOT               \
+                        -B$EXEC_PREFIX                   \
+                        -I$SYSROOT/usr/include/c++/v1    \
+                        -x c++ - -o hello_worldpp        \
+                        -lcxxrt -lpthread -ldl
