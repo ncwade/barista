@@ -1,6 +1,4 @@
 
-require_relative '../src/recipe.rb'
-
 Cookbook.recipe("tftp") do
   url "https://www.kernel.org/pub/software/network/tftp/tftp-hpa-0.40.tar.gz"
 
