@@ -43,11 +43,11 @@ module Conductor
     # CMAKE_SKIP_RPATH: tell cmake that we don't need a 'relink' step before install
     # => see cmGeneratorTarget::NeedRelinkBeforeInstall()
 
-    system "BREW=$HOME/Development/barista/.brew/ \
-            CC=/usr/local/Cellar/llvm/3.6.2/bin/clang \
-            CXX=/usr/local/Cellar/llvm/3.6.2/bin/clang++ \
-            cmake #{options} \
-                  -DCMAKE_SYSROOT=#{sysroot} \
+    system "BREW=$HOME/Development/barista/.brew/   \
+            CC=/usr/local/opt/llvm/bin/clang        \
+            CXX=/usr/local/opt/llvm/bin/clang++     \
+            cmake #{options}                            \
+                  -DCMAKE_SYSROOT=#{sysroot}            \
                   -DCMAKE_INSTALL_PREFIX=#{sysroot}/usr \
                   -DCMAKE_TOOLCHAIN_FILE=$HOME/Development/barista/etc/clang_cross.toolchain.cmake \
                   -DCMAKE_SKIP_RPATH=ON \
