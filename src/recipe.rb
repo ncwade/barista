@@ -19,11 +19,10 @@ require_relative "extensions/module.rb"
 # Execute system commands (in OS shell)
 module Commander
   def system(cmd, *args)
-    # pid = fork { exec(cmd, *args) }
     pid = spawn(cmd, *args)
     Process.wait(pid)
     $stdout.flush
-    # puts $?.success?
+    $?.success?
   end
 end
 
@@ -32,7 +31,7 @@ module Conductor
   include Commander
 
   def configure(args)
-    system "CC=#{prefix}-clang PATH=#{toolchain}:$PATH ./configure --host=#{prefix} --prefix=#{destination} #{args}"
+    system "CC=#{prefix}-#{cc} CXX=#{prefix}-#{cxx} PATH=#{toolchain}:$PATH ./configure --host=#{prefix} --prefix=#{destination} #{args}"
   end
 
   def make(target = nil)
@@ -43,13 +42,15 @@ module Conductor
     # CMAKE_SKIP_RPATH: tell cmake that we don't need a 'relink' step before install
     # => see cmGeneratorTarget::NeedRelinkBeforeInstall()
 
-    system "BREW=$HOME/Development/barista/.brew/   \
-            CC=/usr/local/opt/llvm/bin/clang        \
-            CXX=/usr/local/opt/llvm/bin/clang++     \
+    # puts toolchain
+
+    system "BREW=$HOME/Development/barista/.brew/ \
+            CC=#{toolchain}/#{prefix}-#{cc}       \
+            CXX=#{toolchain}/#{prefix}-#{cxx}     \
             cmake #{options}                            \
                   -DCMAKE_SYSROOT=#{sysroot}            \
                   -DCMAKE_INSTALL_PREFIX=#{sysroot}/usr \
-                  -DCMAKE_TOOLCHAIN_FILE=$HOME/Development/barista/etc/clang_cross.toolchain.cmake \
+                  -DCMAKE_TOOLCHAIN_FILE=$HOME/Development/barista/etc/barista.toolchain.cmake \
                   -DCMAKE_SKIP_RPATH=ON \
                   #{path}"
   end
@@ -84,6 +85,7 @@ class Recipe
   attr_reader :toolchain
   attr_reader :sysroot
   attr_reader :prefix
+  attr_reader :compiler
   attr_reader :destination
 
   def initialize
@@ -118,13 +120,32 @@ class Recipe
     end
   end
 
-  def setup(toolchain, sysroot, prefix, destination)
+  def setup(toolchain, sysroot, prefix, compiler, destination)
     @toolchain = toolchain
     @sysroot = sysroot
     @prefix = prefix
+    @compiler = compiler
     @destination = destination
 
     download()
+  end
+
+  def cc
+    case @compiler
+    when "gcc"
+      "gcc"
+    when "clang"
+      "clang"
+    end
+  end
+
+  def cxx
+    case @compiler
+    when "gcc"
+      "g++"
+    when "clang"
+      "clang++"
+    end
   end
 
   def install

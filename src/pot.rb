@@ -16,7 +16,7 @@ class Pot
       @fileContent = File.read(@@parameters['image'])
       @baseInfo  = JSON.parse(@fileContent)
     else
-      if File.file?(target) then
+      if File.file?(target)
         # Get the complete path
         path = `pwd`
 
@@ -25,15 +25,19 @@ class Pot
         @baseInfo  = JSON.parse(@fileContent)
 
         @@parameters['toolchain'] = path.strip + '/.brew/toolchain/bin/'
-        @@parameters['prefix'] = @baseInfo['prefix']
-        @@parameters['sysroot'] = path.strip + '/.brew/toolchain/' + @@parameters['prefix'] + '/sysroot/'
-        @@parameters['image'] = path.strip + '/' + target
+        @@parameters['prefix']    = @baseInfo['prefix']
+        @@parameters['sysroot']   = path.strip + '/.brew/toolchain/' + @@parameters['prefix'] + '/sysroot/'
+        @@parameters['image']     = path.strip + '/' + target
+        @@parameters["compiler"]  = @baseInfo["compiler"] || "gcc"
       end
     end
 
+    p @@parameters
+    p @baseInfo
+
     # Create directory structure.
-    Dir.mkdir('.brew') unless File.exists?('.brew')
-    Dir.mkdir('.brew/toolchain/') unless File.exists?('.brew/toolchain/')
+    FileUtils.mkdir_p ".brew"
+    FileUtils.mkdir_p ".brew/toolchain/"
 
     # Pull the base FS image.
     if !File.exists?('.brew/base_image')
@@ -60,9 +64,13 @@ class Pot
     @@parameters['prefix']
   end
 
+  def compiler
+    @@parameters['compiler']
+  end
+
   # Get all the projects currently in the Brew.
   def projects
-    @@parameters['projects'] .each do |project|
+    @@parameters['projects'].each do |project|
       puts project['name']
     end
     @@parameters['projects']
@@ -75,7 +83,7 @@ class Pot
 
   # Save the Brew back to JSON format.
   def save()
-    File.open(@@filePath,"w") do |fileHandle|
+    File.open(@@filePath, "w") do |fileHandle|
       fileHandle.write(JSON.pretty_generate(@@parameters))
     end
   end

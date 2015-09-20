@@ -19,7 +19,7 @@ def barista_install(options)
     FileUtils.mkdir_p '.brew/sandbox/'
     Dir.chdir('.brew/sandbox/') do
       recipe = Cookbook.recipes[file_name]
-      code_dir = recipe.setup(pot.toolchain, pot.sysroot, pot.prefix, dest)
+      code_dir = recipe.setup(pot.toolchain, pot.sysroot, pot.prefix, pot.compiler, dest)
       Dir.chdir(code_dir) do
         recipe.install
       end
