@@ -26,5 +26,5 @@ end
 if cmd.eql? "init"
   barista_init(options)
 elsif cmd.eql? "install"
-    barista_install(options)
+  barista_install(options)
 end

@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+SWD="$(cd "$(dirname "$0")"; pwd -P)" # script working directory
+BREW=$SWD/../../
+
+CXX=/usr/local/opt/llvm/bin/clang++
+TARGET_TRIPLE=x86_64-unknown-linux-elf
+SYSROOT=$BREW/toolchain/$TARGET_TRIPLE/sysroot
+EXEC_PREFIX=$BREW/toolchain/bin
+
+$CXX $VERBOSE -target ${TARGET_TRIPLE} --sysroot=$SYSROOT -B$EXEC_PREFIX $*

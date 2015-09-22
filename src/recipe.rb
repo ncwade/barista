@@ -1,6 +1,8 @@
 
 # Recipe
 
+require 'ostruct'
+require 'uri'
 require_relative "extensions/module.rb"
 
 # class Wget < Recipe
@@ -14,36 +16,138 @@ require_relative "extensions/module.rb"
 #   end
 # end
 
+# Execute system commands (in OS shell)
 module Commander
   def system(cmd, *args)
-    # pid = fork { exec(cmd, *args) }
     pid = spawn(cmd, *args)
     Process.wait(pid)
     $stdout.flush
-    puts $?.success?
+    $?.success?
+  end
+end
+
+# Collection of convenient, configured, build-system commands
+module Conductor
+  include Commander
+
+  def configure(args)
+    system "CC=#{prefix}-#{cc} CXX=#{prefix}-#{cxx} PATH=#{toolchain}:$PATH ./configure --host=#{prefix} --prefix=#{destination} #{args}"
+  end
+
+  def make(target = nil)
+    system "PATH=#{toolchain}:$PATH make #{target}"
+  end
+
+  def cmake(options, path)
+    # CMAKE_SKIP_RPATH: tell cmake that we don't need a 'relink' step before install
+    # => see cmGeneratorTarget::NeedRelinkBeforeInstall()
+
+    # puts toolchain
+
+    system "BREW=$HOME/Development/barista/.brew/ \
+            CC=#{toolchain}/#{prefix}-#{cc}       \
+            CXX=#{toolchain}/#{prefix}-#{cxx}     \
+            cmake #{options}                            \
+                  -DCMAKE_SYSROOT=#{sysroot}            \
+                  -DCMAKE_INSTALL_PREFIX=#{sysroot}/usr \
+                  -DCMAKE_TOOLCHAIN_FILE=$HOME/Development/barista/etc/barista.toolchain.cmake \
+                  -DCMAKE_SKIP_RPATH=ON \
+                  #{path}"
+  end
+
+  def ninja(target = nil)
+    system "ninja #{target}"
+  end
+end
+
+module Cookbook
+  def self.recipe(name, &block)
+    recipe = Recipe.new
+    recipe.instance_eval(&block)
+
+    @recipes ||= {}
+    @recipes[name] = recipe
+  end
+
+  def self.recipes
+    @recipes ||= {}
+    @recipes
   end
 end
 
 class Recipe
-  include Commander
+  include Conductor
+
+  URL = Struct.new("URL", :path, :method)
+
+  attr_reader :url
+
+  attr_reader :toolchain
+  attr_reader :sysroot
+  attr_reader :prefix
+  attr_reader :compiler
+  attr_reader :destination
 
   def initialize
+    @attrs = {}
   end
 
-  def install(toolchain, sysroot, prefix, destination)
+  def method_missing(name, *args, &block)
+    @attrs[name.to_sym] = args[0]
   end
 
-  class << self
-    attr_rw :desc
-    attr_rw :homepage
+  def url(path, method = :http)
+    @url = URL.new(path, method)
+  end
 
-    def url(val, specs = {})
+  def download
+    case @url.method
+    when :http
+      uri = URI.parse(@url.path)
+      filename = File.basename(uri.path)
+      if !File.exists? filename
+        system "wget", @url.path
+      end
+      system "tar", "-xf", filename
+      filename.sub(/\.tar\..*$/, "")
+    when :git
+      uri = URI.parse(@url.path)
+      filename = File.basename(uri.path).sub(/\.git$/, "")
+      if !File.exists? filename
+        system "git", "clone", @url.path
+      end
+      filename
     end
+  end
 
-    def depends_on(dep)
-    end
+  def setup(toolchain, sysroot, prefix, compiler, destination)
+    @toolchain = toolchain
+    @sysroot = sysroot
+    @prefix = prefix
+    @compiler = compiler
+    @destination = destination
 
-    def option(name, description = "")
+    download()
+  end
+
+  def cc
+    case @compiler
+    when "gcc"
+      "gcc"
+    when "clang"
+      "clang"
     end
+  end
+
+  def cxx
+    case @compiler
+    when "gcc"
+      "g++"
+    when "clang"
+      "clang++"
+    end
+  end
+
+  def install
   end
 end
